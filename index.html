@@ -54,13 +54,41 @@
       <ul v-if="cart.length > 0">
         <li v-for="item in cart" :key="item.lessonId">
           {{ item.subject }} — ${{ item.price }} × {{ item.quantity }}
-          <button class="remove-btn" @click="removeItem(item)">Remove</button>
+          <button class="remove-btn" @click="removeOne(item)">Remove One</button>
         </li>
       </ul>
 
       <p v-else>Your cart is empty.</p>
 
-      <button @click="currentView = 'lessons'">Back to Lessons</button>
+      <div class="main-buttons">
+        <button @click="currentView = 'lessons'">Back to Lessons</button>
+        <button v-if="cart.length > 0" @click="currentView = 'checkout'">Checkout</button>
+      </div>
+    </div>
+
+    <!-- Checkout Page -->
+    <div v-if="currentView === 'checkout'" class="checkout-page">
+      <h2>Checkout</h2>
+
+      <form @submit.prevent="submitOrder">
+        <label>
+          Name:
+          <input type="text" v-model="name" required>
+        </label>
+
+        <label>
+          Phone:
+          <input type="text" v-model="phone" required>
+        </label>
+
+        <p v-if="!isValidName && name">Name can only contain letters.</p>
+        <p v-if="!isValidPhone && phone">Phone must contain digits only.</p>
+
+        <div class="main-buttons">
+          <button type="button" @click="currentView = 'cart'">Back to Cart</button>
+          <button type="submit" :disabled="!formValid">Submit Order</button>
+        </div>
+      </form>
     </div>
 
   </div>
@@ -72,6 +100,9 @@
         currentView: 'lessons',
         sortKey: 'subject',
         sortOrder: 'asc',
+
+        name: '',
+        phone: '',
 
         lessons: [
           { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5 },
@@ -92,6 +123,15 @@
         },
         totalItems() {
           return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+        },
+        isValidName() {
+          return /^[A-Za-z\s]+$/.test(this.name);
+        },
+        isValidPhone() {
+          return /^[0-9]+$/.test(this.phone);
+        },
+        formValid() {
+          return this.isValidName && this.isValidPhone && this.cart.length > 0;
         }
       },
       methods: {
@@ -114,14 +154,24 @@
           lesson.spaces--;
         },
 
-        removeItem(item) {
+        removeOne(item) {
           let lesson = this.lessons.find(l => l.id === item.lessonId);
 
-          if (lesson) {
-            lesson.spaces += item.quantity;
-          }
+          if (lesson) lesson.spaces++;
 
-          this.cart = this.cart.filter(i => i.lessonId !== item.lessonId);
+          item.quantity--;
+
+          if (item.quantity === 0) {
+            this.cart = this.cart.filter(i => i.lessonId !== item.lessonId);
+          }
+        },
+
+        submitOrder() {
+          alert("Order submitted successfully!");
+          this.cart = [];
+          this.name = '';
+          this.phone = '';
+          this.currentView = 'lessons';
         }
       }
     });
