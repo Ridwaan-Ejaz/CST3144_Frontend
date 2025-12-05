@@ -22,3 +22,12 @@ button {
   padding: 5px 10px;
   cursor: pointer;
 }
+
+.cart-page {
+  margin-top: 20px;
+}
+
+.cart-page ul {
+  list-style: none;
+  padding: 0;
+}

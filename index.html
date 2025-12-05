@@ -10,43 +10,51 @@
   <div id="app">
     <h1>After School Activities</h1>
 
-    <!-- Sorting Controls -->
-    <div class="controls">
-      <label>Sort by:</label>
-      <select v-model="sortKey">
-        <option value="subject">Activity</option>
-        <option value="location">Location</option>
-        <option value="price">Price</option>
-        <option value="spaces">Spaces</option>
-      </select>
+    <!-- Lessons Page -->
+    <div v-if="currentView === 'lessons'">
+      <div class="controls">
+        <label>Sort by:</label>
+        <select v-model="sortKey">
+          <option value="subject">Activity</option>
+          <option value="location">Location</option>
+          <option value="price">Price</option>
+          <option value="spaces">Spaces</option>
+        </select>
 
-      <select v-model="sortOrder">
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-    </div>
+        <select v-model="sortOrder">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
 
-    <!-- Lessons List -->
-    <div class="lessons">
-      <div class="lesson" v-for="lesson in sortedLessons" :key="lesson.id">
-        <h3>{{ lesson.subject }}</h3>
-        <p>Location: {{ lesson.location }}</p>
-        <p>Price: ${{ lesson.price }}</p>
-        <p>Spaces: {{ lesson.spaces }}</p>
-        <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">
-          Add to Cart
-        </button>
+        <button @click="currentView = 'cart'">View Cart ({{ cart.length }})</button>
+      </div>
+
+      <div class="lessons">
+        <div class="lesson" v-for="lesson in sortedLessons" :key="lesson.id">
+          <h3>{{ lesson.subject }}</h3>
+          <p>Location: {{ lesson.location }}</p>
+          <p>Price: ${{ lesson.price }}</p>
+          <p>Spaces: {{ lesson.spaces }}</p>
+          <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">
+            Add to Cart
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Cart -->
-    <div class="cart">
-      <h2>Cart ({{ cart.length }})</h2>
-      <ul>
+    <!-- Cart Page -->
+    <div v-if="currentView === 'cart'" class="cart-page">
+      <h2>Your Cart</h2>
+
+      <ul v-if="cart.length > 0">
         <li v-for="item in cart" :key="item.id">
           {{ item.subject }} - ${{ item.price }}
         </li>
       </ul>
+
+      <p v-else>Your cart is empty.</p>
+
+      <button @click="currentView = 'lessons'">Back to Lessons</button>
     </div>
 
   </div>
@@ -55,6 +63,7 @@
     new Vue({
       el: '#app',
       data: {
+        currentView: 'lessons',
         sortKey: 'subject',
         sortOrder: 'asc',
 
@@ -68,12 +77,9 @@
       computed: {
         sortedLessons() {
           return this.lessons.slice().sort((a, b) => {
-            let modifier = this.sortOrder === 'asc' ? 1 : -1;
-            const aVal = a[this.sortKey];
-            const bVal = b[this.sortKey];
-
-            if (aVal < bVal) return -1 * modifier;
-            if (aVal > bVal) return 1 * modifier;
+            let mod = this.sortOrder === 'asc' ? 1 : -1;
+            if (a[this.sortKey] < b[this.sortKey]) return -1 * mod;
+            if (a[this.sortKey] > b[this.sortKey]) return 1 * mod;
             return 0;
           });
         }
