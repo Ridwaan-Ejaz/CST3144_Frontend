@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <title>After School Activities</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+
+  <!-- FontAwesome Added -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -36,7 +40,9 @@
 
       <div class="lessons">
         <div class="lesson" v-for="lesson in sortedLessons" :key="lesson.id">
-          <h3>{{ lesson.subject }}</h3>
+          <h3>
+            <i :class="lesson.icon"></i> {{ lesson.subject }}
+          </h3>
           <p>Location: {{ lesson.location }}</p>
           <p>Price: ${{ lesson.price }}</p>
           <p>Spaces: {{ lesson.spaces }}</p>
@@ -143,9 +149,9 @@
         lastOrder: null,
 
         lessons: [
-          { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5 },
-          { id: 2, subject: 'Science Lab', location: 'Dubai', price: 80, spaces: 3 },
-          { id: 3, subject: 'English Reading', location: 'Colindale', price: 90, spaces: 2 }
+          { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5, icon: 'fa-solid fa-calculator' },
+          { id: 2, subject: 'Science Lab', location: 'Dubai', price: 80, spaces: 3, icon: 'fa-solid fa-flask' },
+          { id: 3, subject: 'English Reading', location: 'Colindale', price: 90, spaces: 2, icon: 'fa-solid fa-book-open-reader' }
         ],
 
         cart: []

@@ -15,7 +15,12 @@ body {
 .lesson {
   border: 1px solid #ccc;
   padding: 10px;
-  width: 180px;
+  width: 200px;
+}
+
+.lesson h3 i {
+  margin-right: 6px;
+  color: #1976d2;
 }
 
 button {
