@@ -3,6 +3,10 @@ body {
   padding: 20px;
 }
 
+.controls {
+  margin-bottom: 20px;
+}
+
 .lessons {
   display: flex;
   gap: 20px;

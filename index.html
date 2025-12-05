@@ -10,8 +10,25 @@
   <div id="app">
     <h1>After School Activities</h1>
 
+    <!-- Sorting Controls -->
+    <div class="controls">
+      <label>Sort by:</label>
+      <select v-model="sortKey">
+        <option value="subject">Activity</option>
+        <option value="location">Location</option>
+        <option value="price">Price</option>
+        <option value="spaces">Spaces</option>
+      </select>
+
+      <select v-model="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+
+    <!-- Lessons List -->
     <div class="lessons">
-      <div class="lesson" v-for="lesson in lessons" :key="lesson.id">
+      <div class="lesson" v-for="lesson in sortedLessons" :key="lesson.id">
         <h3>{{ lesson.subject }}</h3>
         <p>Location: {{ lesson.location }}</p>
         <p>Price: ${{ lesson.price }}</p>
@@ -22,6 +39,7 @@
       </div>
     </div>
 
+    <!-- Cart -->
     <div class="cart">
       <h2>Cart ({{ cart.length }})</h2>
       <ul>
@@ -30,18 +48,35 @@
         </li>
       </ul>
     </div>
+
   </div>
 
   <script>
     new Vue({
       el: '#app',
       data: {
+        sortKey: 'subject',
+        sortOrder: 'asc',
+
         lessons: [
           { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5 },
           { id: 2, subject: 'Science Lab', location: 'Dubai', price: 80, spaces: 3 },
           { id: 3, subject: 'English Reading', location: 'Colindale', price: 90, spaces: 2 }
         ],
         cart: []
+      },
+      computed: {
+        sortedLessons() {
+          return this.lessons.slice().sort((a, b) => {
+            let modifier = this.sortOrder === 'asc' ? 1 : -1;
+            const aVal = a[this.sortKey];
+            const bVal = b[this.sortKey];
+
+            if (aVal < bVal) return -1 * modifier;
+            if (aVal > bVal) return 1 * modifier;
+            return 0;
+          });
+        }
       },
       methods: {
         addToCart(lesson) {
