@@ -54,7 +54,7 @@
       <ul v-if="cart.length > 0">
         <li v-for="item in cart" :key="item.lessonId">
           {{ item.subject }} — ${{ item.price }} × {{ item.quantity }}
-          <button class="remove-btn" @click="removeOne(item)">Remove One</button>
+          <button class="minus-btn" @click="removeOne(item)">−</button>
         </li>
       </ul>
 
@@ -81,14 +81,47 @@
           <input type="text" v-model="phone" required>
         </label>
 
-        <p v-if="!isValidName && name">Name can only contain letters.</p>
-        <p v-if="!isValidPhone && phone">Phone must contain digits only.</p>
+        <label>
+          Email:
+          <input type="email" v-model="email" required>
+        </label>
+
+        <label>
+          ZIP (optional):
+          <input type="text" v-model="zip">
+        </label>
+
+        <p v-if="name && !isValidName">Name can only contain letters.</p>
+        <p v-if="phone && !isValidPhone">Phone must contain digits only.</p>
 
         <div class="main-buttons">
           <button type="button" @click="currentView = 'cart'">Back to Cart</button>
           <button type="submit" :disabled="!formValid">Submit Order</button>
         </div>
       </form>
+    </div>
+
+    <!-- Receipt Page -->
+    <div v-if="currentView === 'receipt'" class="receipt-page">
+      <h2>Order Receipt</h2>
+
+      <div class="receipt-details">
+        <p><strong>Name:</strong> {{ lastOrder.name }}</p>
+        <p><strong>Phone:</strong> {{ lastOrder.phone }}</p>
+        <p><strong>Email:</strong> {{ lastOrder.email }}</p>
+        <p v-if="lastOrder.zip"><strong>ZIP:</strong> {{ lastOrder.zip }}</p>
+      </div>
+
+      <h3>Items</h3>
+      <ul>
+        <li v-for="item in lastOrder.items" :key="item.lessonId">
+          {{ item.subject }} × {{ item.quantity }} — ${{ item.price * item.quantity }}
+        </li>
+      </ul>
+
+      <p><strong>Total:</strong> ${{ lastOrder.total }}</p>
+
+      <button @click="currentView = 'lessons'">Back to Activities</button>
     </div>
 
   </div>
@@ -98,11 +131,16 @@
       el: '#app',
       data: {
         currentView: 'lessons',
+
         sortKey: 'subject',
         sortOrder: 'asc',
 
         name: '',
         phone: '',
+        email: '',
+        zip: '',
+
+        lastOrder: null,
 
         lessons: [
           { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5 },
@@ -131,7 +169,7 @@
           return /^[0-9]+$/.test(this.phone);
         },
         formValid() {
-          return this.isValidName && this.isValidPhone && this.cart.length > 0;
+          return this.isValidName && this.isValidPhone && this.email && this.cart.length > 0;
         }
       },
       methods: {
@@ -167,11 +205,24 @@
         },
 
         submitOrder() {
-          alert("Order submitted successfully!");
+          const order = {
+            name: this.name,
+            phone: this.phone,
+            email: this.email,
+            zip: this.zip,
+            items: JSON.parse(JSON.stringify(this.cart)),
+            total: this.cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+          };
+
+          this.lastOrder = order;
+
           this.cart = [];
           this.name = '';
           this.phone = '';
-          this.currentView = 'lessons';
+          this.email = '';
+          this.zip = '';
+
+          this.currentView = 'receipt';
         }
       }
     });

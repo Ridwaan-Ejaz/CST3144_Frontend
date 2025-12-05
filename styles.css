@@ -28,18 +28,21 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.remove-btn {
+.minus-btn {
   margin-left: 10px;
-  background: #c62828;
+  background: #666;
   color: white;
+  font-size: 16px;
 }
 
 .cart-page,
-.checkout-page {
+.checkout-page,
+.receipt-page {
   margin-top: 20px;
 }
 
-.cart-page ul {
+.cart-page ul,
+.receipt-page ul {
   list-style: none;
   padding: 0;
 }
@@ -48,4 +51,8 @@ button:disabled {
   margin-top: 20px;
   display: flex;
   gap: 10px;
+}
+
+.receipt-details p {
+  margin: 4px 0;
 }
