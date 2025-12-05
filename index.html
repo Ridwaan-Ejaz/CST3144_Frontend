@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>After School Activities</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <h1>After School Activities</h1>
+
+    <div class="lessons">
+      <div class="lesson" v-for="lesson in lessons" :key="lesson.id">
+        <h3>{{ lesson.subject }}</h3>
+        <p>Location: {{ lesson.location }}</p>
+        <p>Price: ${{ lesson.price }}</p>
+        <p>Spaces: {{ lesson.spaces }}</p>
+        <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">
+          Add to Cart
+        </button>
+      </div>
+    </div>
+
+    <div class="cart">
+      <h2>Cart ({{ cart.length }})</h2>
+      <ul>
+        <li v-for="item in cart" :key="item.id">
+          {{ item.subject }} - ${{ item.price }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        lessons: [
+          { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5 },
+          { id: 2, subject: 'Science Lab', location: 'Dubai', price: 80, spaces: 3 },
+          { id: 3, subject: 'English Reading', location: 'Colindale', price: 90, spaces: 2 }
+        ],
+        cart: []
+      },
+      methods: {
+        addToCart(lesson) {
+          if (lesson.spaces > 0) {
+            lesson.spaces--;
+            this.cart.push(lesson);
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
