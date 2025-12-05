@@ -54,6 +54,7 @@
       <ul v-if="cart.length > 0">
         <li v-for="item in cart" :key="item.lessonId">
           {{ item.subject }} — ${{ item.price }} × {{ item.quantity }}
+          <button class="remove-btn" @click="removeItem(item)">Remove</button>
         </li>
       </ul>
 
@@ -111,6 +112,16 @@
           }
 
           lesson.spaces--;
+        },
+
+        removeItem(item) {
+          let lesson = this.lessons.find(l => l.id === item.lessonId);
+
+          if (lesson) {
+            lesson.spaces += item.quantity;
+          }
+
+          this.cart = this.cart.filter(i => i.lessonId !== item.lessonId);
         }
       }
     });

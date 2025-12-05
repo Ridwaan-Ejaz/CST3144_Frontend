@@ -28,6 +28,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.remove-btn {
+  margin-left: 10px;
+  background: #c62828;
+  color: white;
+}
+
 .cart-page {
   margin-top: 20px;
 }
