@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>After School Activities</title>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
 
-  <!-- FontAwesome Added -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
 
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -39,13 +37,13 @@
       </div>
 
       <div class="lessons">
-        <div class="lesson" v-for="lesson in sortedLessons" :key="lesson.id">
-          <h3>
-            <i :class="lesson.icon"></i> {{ lesson.subject }}
-          </h3>
+        <div class="lesson" v-for="lesson in sortedLessons" :key="lesson._id">
+          <h3>{{ lesson.subject }}</h3>
+          <img :src="lesson.image" width="140" height="100" />
           <p>Location: {{ lesson.location }}</p>
           <p>Price: ${{ lesson.price }}</p>
           <p>Spaces: {{ lesson.spaces }}</p>
+
           <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">
             Add to Cart
           </button>
@@ -148,14 +146,19 @@
 
         lastOrder: null,
 
-        lessons: [
-          { id: 1, subject: 'Math Club', location: 'Hendon', price: 100, spaces: 5, icon: 'fa-solid fa-calculator' },
-          { id: 2, subject: 'Science Lab', location: 'Dubai', price: 80, spaces: 3, icon: 'fa-solid fa-flask' },
-          { id: 3, subject: 'English Reading', location: 'Colindale', price: 90, spaces: 2, icon: 'fa-solid fa-book-open-reader' }
-        ],
-
+        lessons: [],
         cart: []
       },
+
+      created() {
+        fetch('http://localhost:3000/collection/lessons')
+        .then(res => res.json())
+        .then(data => {
+          this.lessons = data;
+        })
+        .catch(err => console.log(err));
+      },
+
       computed: {
         sortedLessons() {
           return this.lessons.slice().sort((a, b) => {
@@ -178,17 +181,18 @@
           return this.isValidName && this.isValidPhone && this.email && this.cart.length > 0;
         }
       },
+
       methods: {
         addToCart(lesson) {
           if (lesson.spaces === 0) return;
 
-          let existing = this.cart.find(i => i.lessonId === lesson.id);
+          let existing = this.cart.find(i => i.lessonId === lesson._id);
 
           if (existing) {
             existing.quantity++;
           } else {
             this.cart.push({
-              lessonId: lesson.id,
+              lessonId: lesson._id,
               subject: lesson.subject,
               price: lesson.price,
               quantity: 1
@@ -199,7 +203,7 @@
         },
 
         removeOne(item) {
-          let lesson = this.lessons.find(l => l.id === item.lessonId);
+          let lesson = this.lessons.find(l => l._id === item.lessonId);
 
           if (lesson) lesson.spaces++;
 
@@ -221,13 +225,11 @@
           };
 
           this.lastOrder = order;
-
           this.cart = [];
           this.name = '';
           this.phone = '';
           this.email = '';
           this.zip = '';
-
           this.currentView = 'receipt';
         }
       }
