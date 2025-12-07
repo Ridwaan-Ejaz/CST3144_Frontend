@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>After School Activities</title>
-
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
 
   <link rel="stylesheet" href="styles.css">
@@ -39,7 +38,8 @@
       <div class="lessons">
         <div class="lesson" v-for="lesson in sortedLessons" :key="lesson._id">
           <h3>{{ lesson.subject }}</h3>
-          <img :src="lesson.image" width="140" height="100" />
+          <img :src="lesson.image" width="120" height="120" />
+
           <p>Location: {{ lesson.location }}</p>
           <p>Price: ${{ lesson.price }}</p>
           <p>Spaces: {{ lesson.spaces }}</p>
@@ -119,13 +119,14 @@
       <h3>Items</h3>
       <ul>
         <li v-for="item in lastOrder.items" :key="item.lessonId">
-          {{ item.subject }} × {{ item.quantity }} — ${{ item.price * item.quantity }}
+          {{ item.subject }} × {{ item.quantity }} — 
+          ${{ item.quantity * item.price }}
         </li>
       </ul>
 
       <p><strong>Total:</strong> ${{ lastOrder.total }}</p>
 
-      <button @click="currentView = 'lessons'">Back to Activities</button>
+      <button @click="restart">Back to Activities</button>
     </div>
 
   </div>
@@ -135,7 +136,8 @@
       el: '#app',
       data: {
         currentView: 'lessons',
-
+        lessons: [],
+        cart: [],
         sortKey: 'subject',
         sortOrder: 'asc',
 
@@ -144,19 +146,7 @@
         email: '',
         zip: '',
 
-        lastOrder: null,
-
-        lessons: [],
-        cart: []
-      },
-
-      created() {
-        fetch('http://localhost:3000/collection/lessons')
-        .then(res => res.json())
-        .then(data => {
-          this.lessons = data;
-        })
-        .catch(err => console.log(err));
+        lastOrder: null
       },
 
       computed: {
@@ -168,21 +158,33 @@
             return 0;
           });
         },
+
         totalItems() {
           return this.cart.reduce((sum, item) => sum + item.quantity, 0);
         },
+
         isValidName() {
           return /^[A-Za-z\s]+$/.test(this.name);
         },
+
         isValidPhone() {
           return /^[0-9]+$/.test(this.phone);
         },
+
         formValid() {
           return this.isValidName && this.isValidPhone && this.email && this.cart.length > 0;
         }
       },
 
       methods: {
+        loadLessons() {
+          fetch('http://localhost:3000/collection/lessons')
+            .then(res => res.json())
+            .then(data => {
+              this.lessons = data;
+            });
+        },
+
         addToCart(lesson) {
           if (lesson.spaces === 0) return;
 
@@ -204,11 +206,9 @@
 
         removeOne(item) {
           let lesson = this.lessons.find(l => l._id === item.lessonId);
-
           if (lesson) lesson.spaces++;
 
           item.quantity--;
-
           if (item.quantity === 0) {
             this.cart = this.cart.filter(i => i.lessonId !== item.lessonId);
           }
@@ -224,14 +224,43 @@
             total: this.cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
           };
 
+          
+          fetch('http://localhost:3000/collection/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(order)
+          });
+
+          
+          this.cart.forEach(item => {
+            const updatedSpaces = this.lessons.find(l => l._id === item.lessonId).spaces;
+
+            fetch(`http://localhost:3000/collection/lessons/${item.lessonId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ spaces: updatedSpaces })
+            });
+          });
+
+          
           this.lastOrder = order;
           this.cart = [];
-          this.name = '';
-          this.phone = '';
-          this.email = '';
-          this.zip = '';
           this.currentView = 'receipt';
+        },
+
+        restart() {
+          this.lastOrder = null;
+          this.name = "";
+          this.phone = "";
+          this.email = "";
+          this.zip = "";
+          this.currentView = 'lessons';
+          this.loadLessons();
         }
+      },
+
+      mounted() {
+        this.loadLessons();
       }
     });
   </script>
