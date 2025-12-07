@@ -11,8 +11,13 @@
     <h1>After School Activities</h1>
 
     
-    <input type="text" v-model="searchQuery" placeholder="Search lessons...">
+    <input type="text" 
+       v-model="searchQuery" 
+       @input="applySearch" 
+       placeholder="Search activities...">
+
     <button @click="applySearch">Search</button>
+
 
     <!-- Lessons Page -->
     <div v-if="currentView === 'lessons'">
