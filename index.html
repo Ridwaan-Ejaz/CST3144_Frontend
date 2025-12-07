@@ -10,13 +10,9 @@
   <div id="app">
     <h1>After School Activities</h1>
 
-    <!-- SEARCH BAR ADDED HERE -->
-    <div class="controls">
-      <input type="text" v-model="searchText" placeholder="Search lessons...">
-      <button @click="searchLessons">Search</button>
-
-      <button @click="clearSearch" v-if="isSearching">Clear Search</button>
-    </div>
+    
+    <input type="text" v-model="searchQuery" placeholder="Search lessons...">
+    <button @click="applySearch">Search</button>
 
     <!-- Lessons Page -->
     <div v-if="currentView === 'lessons'">
@@ -58,7 +54,7 @@
       </div>
     </div>
 
-    <!-- CART PAGE -->
+    <!-- Cart Page -->
     <div v-if="currentView === 'cart'" class="cart-page">
       <h2>Your Cart</h2>
 
@@ -77,44 +73,61 @@
       </div>
     </div>
 
-    <!-- CHECKOUT PAGE -->
+    <!-- Checkout Page -->
     <div v-if="currentView === 'checkout'" class="checkout-page">
       <h2>Checkout</h2>
 
       <form @submit.prevent="submitOrder">
-        <label>Name:<input type="text" v-model="name"></label>
-        <label>Phone:<input type="text" v-model="phone"></label>
-        <label>Email:<input type="email" v-model="email"></label>
-        <label>ZIP:<input type="text" v-model="zip"></label>
+        <label>
+          Name:
+          <input type="text" v-model="name" required>
+        </label>
 
-        <p v-if="name && !isValidName">Name must be letters only.</p>
-        <p v-if="phone && !isValidPhone">Phone must be numbers only.</p>
+        <label>
+          Phone:
+          <input type="text" v-model="phone" required>
+        </label>
+
+        <label>
+          Email:
+          <input type="email" v-model="email" required>
+        </label>
+
+        <label>
+          ZIP (optional):
+          <input type="text" v-model="zip">
+        </label>
+
+        <p v-if="name && !isValidName">Name can only contain letters.</p>
+        <p v-if="phone && !isValidPhone">Phone must contain digits only.</p>
 
         <div class="main-buttons">
-          <button @click="currentView = 'cart'" type="button">Back</button>
+          <button type="button" @click="currentView = 'cart'">Back to Cart</button>
           <button type="submit" :disabled="!formValid">Submit Order</button>
         </div>
       </form>
     </div>
 
-    <!-- RECEIPT PAGE -->
+    <!-- Receipt Page -->
     <div v-if="currentView === 'receipt'" class="receipt-page">
       <h2>Order Receipt</h2>
 
       <div class="receipt-details">
-        <p>Name: {{ lastOrder.name }}</p>
-        <p>Phone: {{ lastOrder.phone }}</p>
-        <p>Email: {{ lastOrder.email }}</p>
+        <p><strong>Name:</strong> {{ lastOrder.name }}</p>
+        <p><strong>Phone:</strong> {{ lastOrder.phone }}</p>
+        <p><strong>Email:</strong> {{ lastOrder.email }}</p>
+        <p v-if="lastOrder.zip"><strong>ZIP:</strong> {{ lastOrder.zip }}</p>
       </div>
 
       <h3>Items</h3>
       <ul>
-        <li v-for="item in lastOrder.items">
-          {{ item.subject }} × {{ item.quantity }}
+        <li v-for="item in lastOrder.items" :key="item.lessonId">
+          {{ item.subject }} × {{ item.quantity }} — 
+          ${{ item.quantity * item.price }}
         </li>
       </ul>
 
-      <p>Total: ${{ lastOrder.total }}</p>
+      <p><strong>Total:</strong> ${{ lastOrder.total }}</p>
 
       <button @click="restart">Back to Activities</button>
     </div>
@@ -127,14 +140,10 @@
       data: {
         currentView: 'lessons',
         lessons: [],
-        originalLessons: [],
         cart: [],
-        searchText: "",
-        isSearching: false,
-
         sortKey: 'subject',
         sortOrder: 'asc',
-
+        searchQuery: '',
         name: '',
         phone: '',
         email: '',
@@ -143,13 +152,28 @@
       },
 
       computed: {
+
+        filteredLessons() {
+          if (!this.searchQuery) return this.lessons;
+          let q = this.searchQuery.toLowerCase();
+
+          return this.lessons.filter(lesson =>
+            lesson.subject.toLowerCase().includes(q) ||
+            lesson.location.toLowerCase().includes(q) ||
+            lesson.price.toString().includes(q) ||
+            lesson.spaces.toString().includes(q)
+          );
+        },
+
         sortedLessons() {
-          return this.lessons.slice().sort((a, b) => {
+          let sorted = [...this.filteredLessons];
+          sorted.sort((a, b) => {
             let mod = this.sortOrder === 'asc' ? 1 : -1;
             if (a[this.sortKey] < b[this.sortKey]) return -1 * mod;
             if (a[this.sortKey] > b[this.sortKey]) return 1 * mod;
             return 0;
           });
+          return sorted;
         },
 
         totalItems() {
@@ -170,40 +194,31 @@
       },
 
       methods: {
+        applySearch() {},
+
         loadLessons() {
           fetch('https://cst3144-backend-wyke.onrender.com/collection/lessons')
             .then(res => res.json())
             .then(data => {
               this.lessons = data;
-              this.originalLessons = data;
             });
-        },
-
-        searchLessons() {
-          if (this.searchText.trim() === "") {
-            return;
-          }
-
-          fetch(`https://cst3144-backend-wyke.onrender.com/search/${this.searchText}`)
-            .then(res => res.json())
-            .then(data => {
-              this.lessons = data;
-              this.isSearching = true;
-            });
-        },
-
-        clearSearch() {
-          this.lessons = this.originalLessons;
-          this.searchText = "";
-          this.isSearching = false;
         },
 
         addToCart(lesson) {
           if (lesson.spaces === 0) return;
 
-          let exist = this.cart.find(i => i.lessonId === lesson._id);
-          if (exist) exist.quantity++;
-          else this.cart.push({ lessonId: lesson._id, subject: lesson.subject, price: lesson.price, quantity: 1 });
+          let existing = this.cart.find(i => i.lessonId === lesson._id);
+
+          if (existing) {
+            existing.quantity++;
+          } else {
+            this.cart.push({
+              lessonId: lesson._id,
+              subject: lesson.subject,
+              price: lesson.price,
+              quantity: 1
+            });
+          }
 
           lesson.spaces--;
         },
@@ -213,7 +228,9 @@
           if (lesson) lesson.spaces++;
 
           item.quantity--;
-          if (item.quantity === 0) this.cart = this.cart.filter(i => i.lessonId !== item.lessonId);
+          if (item.quantity === 0) {
+            this.cart = this.cart.filter(i => i.lessonId !== item.lessonId);
+          }
         },
 
         submitOrder() {
@@ -233,11 +250,12 @@
           });
 
           this.cart.forEach(item => {
-            let newSpaces = this.lessons.find(l => l._id === item.lessonId).spaces;
+            const updatedSpaces = this.lessons.find(l => l._id === item.lessonId).spaces;
+
             fetch(`https://cst3144-backend-wyke.onrender.com/collection/lessons/${item.lessonId}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ spaces: newSpaces })
+              body: JSON.stringify({ spaces: updatedSpaces })
             });
           });
 
@@ -247,6 +265,11 @@
         },
 
         restart() {
+          this.lastOrder = null;
+          this.name = "";
+          this.phone = "";
+          this.email = "";
+          this.zip = "";
           this.currentView = 'lessons';
           this.loadLessons();
         }
