@@ -1,31 +1,38 @@
+/* GENERAL PAGE STYLING */
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
+  background: #f5f7fa;
+  margin: 0;
 }
 
-.controls {
+h1 {
   margin-bottom: 20px;
+  text-align: center;
+  color: #333;
 }
 
-.lessons {
-  display: flex;
-  gap: 20px;
-}
-
-.lesson {
-  border: 1px solid #ccc;
-  padding: 10px;
-  width: 200px;
-}
-
-.lesson h3 i {
+/* SEARCH INPUT + BUTTON */
+input[type="text"] {
+  padding: 8px 10px;
+  width: 250px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
   margin-right: 6px;
-  color: #1976d2;
 }
 
 button {
-  padding: 5px 10px;
+  padding: 8px 12px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  border-radius: 6px;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background: #135ba7;
 }
 
 button:disabled {
@@ -33,18 +40,50 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.minus-btn {
-  margin-left: 10px;
-  background: #666;
-  color: white;
-  font-size: 16px;
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
 }
 
-.cart-page,
-.checkout-page,
-.receipt-page {
-  margin-top: 20px;
+
+.lessons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+  margin-top: 10px;
 }
+
+
+.lesson {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+}
+
+.lesson img {
+  display: block;
+  margin: auto;
+  border-radius: 6px;
+}
+
+
+.lesson p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+
+.lesson button {
+  margin-top: 10px;
+}
+
 
 .cart-page ul,
 .receipt-page ul {
@@ -52,10 +91,70 @@ button:disabled {
   padding: 0;
 }
 
+.cart-page li,
+.receipt-page li {
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.minus-btn {
+  margin-left: 10px;
+  background: #e63946;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 18px;
+}
+
+.minus-btn:hover {
+  background: #c92a3c;
+}
+
+
+.checkout-page form {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+  width: 350px;
+}
+
+.checkout-page label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.checkout-page input {
+  width: 100%;
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
 .main-buttons {
   margin-top: 20px;
   display: flex;
   gap: 10px;
+}
+
+
+.receipt-page {
+  margin-top: 20px;
+}
+
+.receipt-details {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+  width: 350px;
 }
 
 .receipt-details p {
