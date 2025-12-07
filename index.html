@@ -10,7 +10,7 @@
   <div id="app">
     <h1>After School Activities</h1>
 
-    <!-- HEADER AREA (Only show on lesson page) -->
+    
     <div v-if="currentView === 'lessons'" class="top-bar">
 
       <div class="search-area">
@@ -20,7 +20,7 @@
           @input="applySearch"
           placeholder="Search activities..."
         >
-        <button @click="applySearch">Search</button>
+        
       </div>
 
       <div class="controls">
@@ -96,7 +96,7 @@
     <!-- Checkout Page -->
     <div v-if="currentView === 'checkout'" class="checkout-wrapper">
 
-      <!-- ORDER SUMMARY -->
+      
       <div class="summary-box">
         <h3>Order Summary</h3>
 
@@ -112,7 +112,7 @@
         </p>
       </div>
 
-      <!-- CUSTOMER FORM -->
+      
       <div class="checkout-box">
         <h3>Enter Your Details</h3>
 
