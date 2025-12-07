@@ -10,15 +10,19 @@
   <div id="app">
     <h1>After School Activities</h1>
 
-    <input 
-      type="text"
-      v-model="searchQuery"
-      @input="applySearch"
-      placeholder="Search activities..."
-    >
+    <!-- HEADER AREA (Only show on lesson page) -->
+    <div v-if="currentView === 'lessons'" class="top-bar">
 
-    <!-- Lessons Page -->
-    <div v-if="currentView === 'lessons'">
+      <div class="search-area">
+        <input 
+          type="text"
+          v-model="searchQuery"
+          @input="applySearch"
+          placeholder="Search activities..."
+        >
+        <button @click="applySearch">Search</button>
+      </div>
+
       <div class="controls">
         <label>Sort by:</label>
         <select v-model="sortKey">
@@ -41,10 +45,15 @@
         </button>
       </div>
 
+    </div>
+
+
+
+    <!-- Lessons Page -->
+    <div v-if="currentView === 'lessons'">
       <div class="lessons">
         <div class="lesson" v-for="lesson in sortedLessons" :key="lesson._id">
           <h3>{{ lesson.subject }}</h3>
-
           <img :src="lesson.image" width="120" height="120" />
 
           <p>Location: {{ lesson.location }}</p>
@@ -60,6 +69,8 @@
         </div>
       </div>
     </div>
+
+
 
     <!-- Cart Page -->
     <div v-if="currentView === 'cart'" class="cart-page">
@@ -80,68 +91,98 @@
       </div>
     </div>
 
+
+
     <!-- Checkout Page -->
-    <div v-if="currentView === 'checkout'" class="checkout-page">
-      <h2>Checkout</h2>
+    <div v-if="currentView === 'checkout'" class="checkout-wrapper">
 
-      <form @submit.prevent="submitOrder">
-        <label>
-          Name:
-          <input type="text" v-model="name" required>
-        </label>
+      <!-- ORDER SUMMARY -->
+      <div class="summary-box">
+        <h3>Order Summary</h3>
 
-        <label>
-          Phone:
-          <input type="text" v-model="phone" required>
-        </label>
+        <ul>
+          <li v-for="item in cart" :key="item.lessonId">
+            {{ item.subject }} x {{ item.quantity }}
+            — ${{ item.quantity * item.price }}
+          </li>
+        </ul>
 
-        <label>
-          Email:
-          <input type="email" v-model="email" required>
-        </label>
-
-        <label>
-          ZIP (optional):
-          <input type="text" v-model="zip">
-        </label>
-
-        <p v-if="name && !isValidName">Name can only contain letters.</p>
-        <p v-if="phone && !isValidPhone">Phone must contain digits only.</p>
-
-        <div class="main-buttons">
-          <button type="button" @click="currentView = 'cart'">Back to Cart</button>
-          <button type="submit" :disabled="!formValid">Submit Order</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Receipt Page -->
-    <div v-if="currentView === 'receipt'" class="receipt-page">
-      <h2>Order Receipt</h2>
-
-      <div class="receipt-details">
-        <p><strong>Name:</strong> {{ lastOrder.name }}</p>
-        <p><strong>Phone:</strong> {{ lastOrder.phone }}</p>
-        <p><strong>Email:</strong> {{ lastOrder.email }}</p>
-        <p v-if="lastOrder.zip"><strong>ZIP:</strong> {{ lastOrder.zip }}</p>
+        <p class="checkout-total">
+          <strong>Total:</strong> ${{ cart.reduce((sum, i) => sum + i.price * i.quantity, 0) }}
+        </p>
       </div>
 
-      <h3>Items</h3>
-      <ul>
-        <li v-for="item in lastOrder.items" :key="item.lessonId">
-          {{ item.subject }} × {{ item.quantity }} — ${{ item.quantity * item.price }}
-        </li>
-      </ul>
+      <!-- CUSTOMER FORM -->
+      <div class="checkout-box">
+        <h3>Enter Your Details</h3>
 
-      <p><strong>Total:</strong> ${{ lastOrder.total }}</p>
+        <form @submit.prevent="submitOrder">
+          <label>
+            Name:
+            <input type="text" v-model="name" required>
+          </label>
 
-      <button @click="restart">Back to Activities</button>
+          <label>
+            Phone:
+            <input type="text" v-model="phone" required>
+          </label>
+
+          <label>
+            Email:
+            <input type="email" v-model="email" required>
+          </label>
+
+          <label>
+            ZIP (optional):
+            <input type="text" v-model="zip">
+          </label>
+
+          <p v-if="name && !isValidName">Name can only contain letters.</p>
+          <p v-if="phone && !isValidPhone">Phone must contain digits only.</p>
+
+          <button type="button" @click="currentView = 'cart'">Back</button>
+          <button type="submit" :disabled="!formValid">Submit Order</button>
+        </form>
+      </div>
+
     </div>
+
+
+
+    <!-- Receipt Page -->
+    <div v-if="currentView === 'receipt'" class="receipt-wrapper">
+      <div class="receipt-box">
+        <h2>Order Receipt</h2>
+
+        <div class="receipt-details">
+          <p><strong>Name:</strong> {{ lastOrder.name }}</p>
+          <p><strong>Phone:</strong> {{ lastOrder.phone }}</p>
+          <p><strong>Email:</strong> {{ lastOrder.email }}</p>
+          <p v-if="lastOrder.zip"><strong>ZIP:</strong> {{ lastOrder.zip }}</p>
+        </div>
+
+        <h3>Items Purchased</h3>
+        <ul>
+          <li v-for="item in lastOrder.items" :key="item.lessonId">
+            {{ item.subject }} x {{ item.quantity }} — ${{ item.quantity * item.price }}
+          </li>
+        </ul>
+
+        <p class="receipt-total">
+          <strong>Total:</strong> ${{ lastOrder.total }}
+        </p>
+
+        <button @click="restart">Back to Activities</button>
+      </div>
+    </div>
+
+
 
   </div>
 
   <script>
     new Vue({
+
       el: "#app",
 
       data: {
@@ -193,6 +234,7 @@
       },
 
       methods: {
+
         applySearch() {
           if (!this.searchQuery) {
             this.loadLessons();
@@ -201,18 +243,14 @@
 
           fetch(`https://cst3144-backend-wyke.onrender.com/search/${this.searchQuery}`)
             .then(res => res.json())
-            .then(data => {
-              this.lessons = data;
-            })
+            .then(data => this.lessons = data)
             .catch(err => console.log(err));
         },
 
         loadLessons() {
           fetch("https://cst3144-backend-wyke.onrender.com/collection/lessons")
             .then(res => res.json())
-            .then(data => {
-              this.lessons = data;
-            });
+            .then(data => this.lessons = data);
         },
 
         addToCart(lesson) {
@@ -251,10 +289,7 @@
             email: this.email,
             zip: this.zip,
             items: JSON.parse(JSON.stringify(this.cart)),
-            total: this.cart.reduce(
-              (sum, i) => sum + i.price * i.quantity,
-              0
-            )
+            total: this.cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
           };
 
           fetch("https://cst3144-backend-wyke.onrender.com/collection/orders", {
@@ -264,18 +299,12 @@
           });
 
           this.cart.forEach(item => {
-            const updatedSpaces = this.lessons.find(
-              l => l._id === item.lessonId
-            ).spaces;
-
-            fetch(
-              `https://cst3144-backend-wyke.onrender.com/collection/lessons/${item.lessonId}`,
-              {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ spaces: updatedSpaces })
-              }
-            );
+            const updatedSpaces = this.lessons.find(l => l._id === item.lessonId).spaces;
+            fetch(`https://cst3144-backend-wyke.onrender.com/collection/lessons/${item.lessonId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ spaces: updatedSpaces })
+            });
           });
 
           this.lastOrder = order;
@@ -297,7 +326,9 @@
       mounted() {
         this.loadLessons();
       }
+
     });
   </script>
+
 </body>
 </html>
