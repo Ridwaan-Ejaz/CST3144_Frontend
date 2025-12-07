@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>After School Activities</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
-
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -178,7 +177,7 @@
 
       methods: {
         loadLessons() {
-          fetch('http://localhost:3000/collection/lessons')
+          fetch('https://cst3144-backend-wyke.onrender.com/collection/lessons')
             .then(res => res.json())
             .then(data => {
               this.lessons = data;
@@ -224,25 +223,22 @@
             total: this.cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
           };
 
-          
-          fetch('http://localhost:3000/collection/orders', {
+          fetch('https://cst3144-backend-wyke.onrender.com/collection/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(order)
           });
 
-          
           this.cart.forEach(item => {
             const updatedSpaces = this.lessons.find(l => l._id === item.lessonId).spaces;
 
-            fetch(`http://localhost:3000/collection/lessons/${item.lessonId}`, {
+            fetch(`https://cst3144-backend-wyke.onrender.com/collection/lessons/${item.lessonId}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ spaces: updatedSpaces })
             });
           });
 
-          
           this.lastOrder = order;
           this.cart = [];
           this.currentView = 'receipt';
