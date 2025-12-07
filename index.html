@@ -10,14 +10,14 @@
   <div id="app">
     <h1>After School Activities</h1>
 
-    
-    <input type="text" 
-       v-model="searchQuery" 
-       @input="applySearch" 
-       placeholder="Search activities...">
+    <input 
+      type="text"
+      v-model="searchQuery"
+      @input="applySearch"
+      placeholder="Search activities..."
+    >
 
     <button @click="applySearch">Search</button>
-
 
     <!-- Lessons Page -->
     <div v-if="currentView === 'lessons'">
@@ -46,13 +46,17 @@
       <div class="lessons">
         <div class="lesson" v-for="lesson in sortedLessons" :key="lesson._id">
           <h3>{{ lesson.subject }}</h3>
+
           <img :src="lesson.image" width="120" height="120" />
 
           <p>Location: {{ lesson.location }}</p>
           <p>Price: ${{ lesson.price }}</p>
           <p>Spaces: {{ lesson.spaces }}</p>
 
-          <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">
+          <button 
+            @click="addToCart(lesson)"
+            :disabled="lesson.spaces === 0"
+          >
             Add to Cart
           </button>
         </div>
@@ -127,8 +131,7 @@
       <h3>Items</h3>
       <ul>
         <li v-for="item in lastOrder.items" :key="item.lessonId">
-          {{ item.subject }} × {{ item.quantity }} — 
-          ${{ item.quantity * item.price }}
+          {{ item.subject }} × {{ item.quantity }} — ${{ item.quantity * item.price }}
         </li>
       </ul>
 
@@ -141,39 +144,27 @@
 
   <script>
     new Vue({
-      el: '#app',
+      el: "#app",
+
       data: {
-        currentView: 'lessons',
+        currentView: "lessons",
         lessons: [],
         cart: [],
-        sortKey: 'subject',
-        sortOrder: 'asc',
-        searchQuery: '',
-        name: '',
-        phone: '',
-        email: '',
-        zip: '',
+        sortKey: "subject",
+        sortOrder: "asc",
+        searchQuery: "",
+        name: "",
+        phone: "",
+        email: "",
+        zip: "",
         lastOrder: null
       },
 
       computed: {
-
-        filteredLessons() {
-          if (!this.searchQuery) return this.lessons;
-          let q = this.searchQuery.toLowerCase();
-
-          return this.lessons.filter(lesson =>
-            lesson.subject.toLowerCase().includes(q) ||
-            lesson.location.toLowerCase().includes(q) ||
-            lesson.price.toString().includes(q) ||
-            lesson.spaces.toString().includes(q)
-          );
-        },
-
         sortedLessons() {
-          let sorted = [...this.filteredLessons];
+          let sorted = [...this.lessons];
           sorted.sort((a, b) => {
-            let mod = this.sortOrder === 'asc' ? 1 : -1;
+            let mod = this.sortOrder === "asc" ? 1 : -1;
             if (a[this.sortKey] < b[this.sortKey]) return -1 * mod;
             if (a[this.sortKey] > b[this.sortKey]) return 1 * mod;
             return 0;
@@ -194,15 +185,32 @@
         },
 
         formValid() {
-          return this.isValidName && this.isValidPhone && this.email && this.cart.length > 0;
+          return (
+            this.isValidName &&
+            this.isValidPhone &&
+            this.email &&
+            this.cart.length > 0
+          );
         }
       },
 
       methods: {
-        applySearch() {},
+        applySearch() {
+          if (!this.searchQuery) {
+            this.loadLessons();
+            return;
+          }
+
+          fetch(`https://cst3144-backend-wyke.onrender.com/search/${this.searchQuery}`)
+            .then(res => res.json())
+            .then(data => {
+              this.lessons = data;
+            })
+            .catch(err => console.log(err));
+        },
 
         loadLessons() {
-          fetch('https://cst3144-backend-wyke.onrender.com/collection/lessons')
+          fetch("https://cst3144-backend-wyke.onrender.com/collection/lessons")
             .then(res => res.json())
             .then(data => {
               this.lessons = data;
@@ -245,28 +253,36 @@
             email: this.email,
             zip: this.zip,
             items: JSON.parse(JSON.stringify(this.cart)),
-            total: this.cart.reduce((sum, i) => sum + i.price * i.quantity, 0)
+            total: this.cart.reduce(
+              (sum, i) => sum + i.price * i.quantity,
+              0
+            )
           };
 
-          fetch('https://cst3144-backend-wyke.onrender.com/collection/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          fetch("https://cst3144-backend-wyke.onrender.com/collection/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(order)
           });
 
           this.cart.forEach(item => {
-            const updatedSpaces = this.lessons.find(l => l._id === item.lessonId).spaces;
+            const updatedSpaces = this.lessons.find(
+              l => l._id === item.lessonId
+            ).spaces;
 
-            fetch(`https://cst3144-backend-wyke.onrender.com/collection/lessons/${item.lessonId}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ spaces: updatedSpaces })
-            });
+            fetch(
+              `https://cst3144-backend-wyke.onrender.com/collection/lessons/${item.lessonId}`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ spaces: updatedSpaces })
+              }
+            );
           });
 
           this.lastOrder = order;
           this.cart = [];
-          this.currentView = 'receipt';
+          this.currentView = "receipt";
         },
 
         restart() {
@@ -275,7 +291,7 @@
           this.phone = "";
           this.email = "";
           this.zip = "";
-          this.currentView = 'lessons';
+          this.currentView = "lessons";
           this.loadLessons();
         }
       },
